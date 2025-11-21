@@ -29,9 +29,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSub
             </svg>
           </button>
         </div>
-        
+
         <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-          To generate music, this app requires a Google Gemini API key. 
+          To generate music, this app requires a Google Gemini API key.
           Your key is stored locally in your browser and is never sent to our servers.
         </p>
 
@@ -45,9 +45,10 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSub
               placeholder="AIzaSy..."
               className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent transition-all placeholder-slate-700 font-mono text-sm"
               autoFocus
+              id="api-key-input"
             />
           </div>
-          
+
           <div className="flex justify-end gap-3 mt-2">
             <button
               type="button"
@@ -60,16 +61,17 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSub
               type="submit"
               disabled={!inputKey.trim()}
               className="px-6 py-2.5 bg-gradient-to-r from-accent to-purple-600 hover:brightness-110 text-white rounded-xl font-bold text-sm shadow-lg shadow-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              id="api-key-submit-button"
             >
               Save & Continue
             </button>
           </div>
         </form>
-        
+
         <div className="mt-6 pt-4 border-t border-white/5 text-center">
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:text-accent/80 underline underline-offset-2">
-                Get an API Key from Google AI Studio
-            </a>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:text-accent/80 underline underline-offset-2">
+            Get an API Key from Google AI Studio
+          </a>
         </div>
       </div>
     </div>

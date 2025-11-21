@@ -25,6 +25,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, dis
         placeholder="Describe the scene, paste your script, or simply list the emotions you want the music to evoke..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        id="script-input"
         disabled={disabled}
       />
     </div>
