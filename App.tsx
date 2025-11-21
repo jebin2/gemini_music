@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScriptEditor } from './components/ScriptEditor';
 import { AudioPlayer } from './components/AudioPlayer';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import { composeMusicFromScript } from './services/geminiService';
 import { LoadingState, Composition } from './types';
 
@@ -9,28 +10,73 @@ export default function App() {
   const [composition, setComposition] = useState<Composition | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [error, setError] = useState<string | null>(null);
+  
+  // API Key State
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleProcess = async () => {
-    if (!script.trim()) return;
-    
+  useEffect(() => {
+    const storedKey = localStorage.getItem('gemini_api_key');
+    if (storedKey) {
+      setApiKey(storedKey);
+    }
+  }, []);
+
+  const executeComposition = async (key: string, scriptText: string) => {
     setLoadingState(LoadingState.COMPOSING);
     setError(null);
     setComposition(null);
 
     try {
-      // Single step: Ask Gemini to compose music (JSON) based on the script
-      const result = await composeMusicFromScript(script);
+      const result = await composeMusicFromScript(scriptText, key);
       setComposition(result);
       setLoadingState(LoadingState.COMPLETE);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An unexpected error occurred.");
       setLoadingState(LoadingState.ERROR);
+      
+      // If error implies auth failure, maybe clear key
+      if (err.message.includes('403') || err.message.includes('key')) {
+        localStorage.removeItem('gemini_api_key');
+        setApiKey(null);
+        setError("Invalid API Key. Please try again.");
+      }
     }
+  };
+
+  const handleProcessClick = () => {
+    if (!script.trim()) return;
+    
+    if (!apiKey) {
+      setIsModalOpen(true);
+    } else {
+      executeComposition(apiKey, script);
+    }
+  };
+
+  const handleKeySubmit = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem('gemini_api_key', key);
+    setIsModalOpen(false);
+    // Proceed immediately with composition
+    executeComposition(key, script);
+  };
+
+  const handleResetKey = () => {
+      localStorage.removeItem('gemini_api_key');
+      setApiKey(null);
+      setIsModalOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 p-4 md:p-8 font-sans selection:bg-accent/30 selection:text-white">
+      <ApiKeyModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSubmit={handleKeySubmit} 
+      />
+
       {/* Header */}
       <header className="max-w-4xl mx-auto mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -43,10 +89,21 @@ export default function App() {
         </div>
         
         <div className="flex items-center gap-4">
-           <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-500 flex items-center gap-2">
-             <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-             Gemini Composer
-           </div>
+           {apiKey ? (
+                <button 
+                    onClick={handleResetKey}
+                    className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-2"
+                    title="Click to change API Key"
+                >
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    API Key Set
+                </button>
+           ) : (
+               <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-500 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                    No API Key
+               </div>
+           )}
         </div>
       </header>
 
@@ -67,7 +124,7 @@ export default function App() {
             
              <div className="flex justify-center">
                 <button
-                onClick={handleProcess}
+                onClick={handleProcessClick}
                 disabled={!script.trim() || loadingState === LoadingState.COMPOSING}
                 className={`
                     w-full md:w-72 py-4 rounded-xl font-display font-bold text-lg shadow-lg transition-all

@@ -1,16 +1,12 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Composition } from "../types";
 
-const getClient = () => {
-  const apiKey = process.env.API_KEY;
+export const composeMusicFromScript = async (script: string, apiKey: string): Promise<Composition> => {
   if (!apiKey) {
-    throw new Error("API_KEY environment variable is missing");
+    throw new Error("API Key is required");
   }
-  return new GoogleGenAI({ apiKey });
-};
-
-export const composeMusicFromScript = async (script: string): Promise<Composition> => {
-  const ai = getClient();
+  
+  const ai = new GoogleGenAI({ apiKey });
   
   const prompt = `
     Act as a professional music composer. 
@@ -31,7 +27,7 @@ export const composeMusicFromScript = async (script: string): Promise<Compositio
   `;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.0-flash-exp',
     contents: prompt,
     config: {
       responseMimeType: "application/json",
