@@ -5,9 +5,9 @@ export const composeMusicFromScript = async (script: string, apiKey: string): Pr
   if (!apiKey) {
     throw new Error("API Key is required");
   }
-  
+
   const ai = new GoogleGenAI({ apiKey });
-  
+
   const prompt = `
     Act as a professional music composer. 
     Analyze the following script/text and compose a short background music loop (approx 8-16 bars) that matches the mood.
@@ -27,7 +27,7 @@ export const composeMusicFromScript = async (script: string, apiKey: string): Pr
   `;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -43,9 +43,9 @@ export const composeMusicFromScript = async (script: string, apiKey: string): Pr
               type: Type.OBJECT,
               properties: {
                 id: { type: Type.STRING },
-                instrument: { 
-                  type: Type.STRING, 
-                  enum: ['piano', 'synth', 'bass', 'pad', 'bells', 'guitar', 'drums'] 
+                instrument: {
+                  type: Type.STRING,
+                  enum: ['piano', 'synth', 'bass', 'pad', 'bells', 'guitar', 'drums']
                 },
                 notes: {
                   type: Type.ARRAY,
@@ -73,6 +73,6 @@ export const composeMusicFromScript = async (script: string, apiKey: string): Pr
 
   const text = response.text;
   if (!text) throw new Error("No composition generated");
-  
+
   return JSON.parse(text) as Composition;
 };
